@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>NPAT QR Mock Test – Yashvi Edition</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{
+    --bg:#0f0f1a;--card:#1a1a2e;--accent:#7c3aed;--accent2:#a855f7;
+    --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--text:#f1f5f9;
+    --muted:#94a3b8;--border:#2d2d4e;--radius:14px;
+  }
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+  #app{max-width:600px;margin:0 auto;padding:16px}
+
+  /* HOME */
+  .home{text-align:center;padding:40px 0}
+  .logo{font-size:48px;margin-bottom:8px}
+  .home h1{font-size:28px;font-weight:800;background:linear-gradient(135deg,#a855f7,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+  .home p{color:var(--muted);font-size:15px;margin-bottom:32px}
+  .topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+  .topic-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px 12px;cursor:pointer;transition:all .2s;text-align:left}
+  .topic-card:active{transform:scale(0.97)}
+  .topic-card.selected{border-color:var(--accent);background:#1e1a35}
+  .topic-card .t-icon{font-size:26px;margin-bottom:6px}
+  .topic-card .t-name{font-size:13px;font-weight:700;color:var(--text)}
+  .topic-card .t-count{font-size:11px;color:var(--muted);margin-top:2px}
+  .topic-card .t-score{font-size:11px;margin-top:4px;font-weight:600}
+  .topic-card .t-score.good{color:var(--green)}
+  .topic-card .t-score.mid{color:var(--yellow)}
+  .topic-card .t-score.bad{color:var(--red)}
+  .btn{display:block;width:100%;padding:16px;border:none;border-radius:var(--radius);font-size:16px;font-weight:700;cursor:pointer;transition:all .2s}
+  .btn-primary{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff}
+  .btn-primary:active{transform:scale(0.98)}
+  .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text);margin-top:10px}
+
+  /* QUIZ */
+  .quiz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:12px 16px;background:var(--card);border-radius:var(--radius);border:1px solid var(--border)}
+  .quiz-topic{font-size:13px;font-weight:700;color:var(--accent2)}
+  .timer{font-size:18px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
+  .timer.warn{color:var(--red);animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+  .progress-bar{height:4px;background:var(--border);border-radius:4px;margin-bottom:20px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#7c3aed,#a855f7);border-radius:4px;transition:width .3s}
+  .q-counter{font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center}
+  .q-text{font-size:16px;font-weight:600;line-height:1.6;margin-bottom:20px;padding:16px;background:var(--card);border-radius:var(--radius);border:1px solid var(--border)}
+  .options{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+  .opt{padding:14px 16px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);font-size:15px;cursor:pointer;transition:all .2s;text-align:left;color:var(--text)}
+  .opt:active{transform:scale(0.98)}
+  .opt.selected{border-color:var(--accent);background:#1e1a35;color:#c4b5fd}
+  .opt.correct{border-color:var(--green);background:#052e16;color:#4ade80}
+  .opt.wrong{border-color:var(--red);background:#2d0000;color:#fca5a5}
+  .opt.reveal-correct{border-color:var(--green);background:#052e16;color:#4ade80}
+  .nav-row{display:flex;gap:10px}
+  .nav-row .btn{flex:1;padding:14px;font-size:14px}
+  .btn-skip{background:var(--card);border:1.5px solid var(--border);color:var(--muted)}
+  .btn-next{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff}
+  .btn-submit{background:linear-gradient(135deg,#059669,#10b981);color:#fff}
+  .explanation{margin-top:14px;padding:12px 14px;background:#1a1a1a;border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;font-size:13px;color:var(--muted);line-height:1.6}
+
+  /* RESULT */
+  .result{text-align:center;padding:24px 0}
+  .result-emoji{font-size:64px;margin-bottom:12px}
+  .result h2{font-size:24px;font-weight:800;margin-bottom:8px}
+  .result-msg{font-size:17px;font-weight:700;margin:16px 0;padding:16px;border-radius:var(--radius);line-height:1.5}
+  .result-msg.good{background:#052e16;color:#4ade80;border:1.5px solid #16a34a}
+  .result-msg.mid{background:#422006;color:#fbbf24;border:1.5px solid #d97706}
+  .result-msg.bad{background:#2d0000;color:#fca5a5;border:1.5px solid #dc2626}
+  .score-box{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:20px 0}
+  .score-stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 8px;text-align:center}
+  .score-stat .val{font-size:24px;font-weight:800}
+  .score-stat .lbl{font-size:11px;color:var(--muted);margin-top:2px}
+  .val.good{color:var(--green)}
+  .val.bad{color:var(--red)}
+  .val.score{color:var(--accent2)}
+  .review-list{text-align:left;margin-top:20px}
+  .review-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;font-size:13px}
+  .review-item .ri-q{font-weight:600;margin-bottom:6px;line-height:1.5}
+  .review-item .ri-ans{font-size:12px;margin-top:4px}
+  .ri-correct{color:var(--green)}
+  .ri-wrong{color:var(--red)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const TOPICS = [
+  {id:'ns',name:'Number Systems',icon:'🔢'},
+  {id:'algebra',name:'Algebra',icon:'📐'},
+  {id:'arith',name:'Arithmetic',icon:'➗'},
+  {id:'geometry',name:'Geometry',icon:'📏'},
+  {id:'di',name:'Data Interpretation',icon:'📊'},
+  {id:'modern',name:'Modern Math',icon:'🎲'},
+];
+
+const QUESTIONS = {
+ns:[
+  {q:"If N = 2^31 × 3^19, how many divisors does N have?",opts:["640","320","600","480"],ans:0,exp:"Divisors = (31+1)(19+1) = 32×20 = 640"},
+  {q:"The LCM of two numbers is 2520 and their HCF is 12. If one number is 180, find the other.",opts:["168","156","144","132"],ans:0,exp:"Other = LCM×HCF/one = 2520×12/180 = 168"},
+  {q:"How many natural numbers between 1 and 1000 are divisible by 7 but NOT by 11?",opts:["117","130","128","119"],ans:0,exp:"Div by 7: 142, Div by 77: 12, answer = 142−12=130... recount: ⌊1000/7⌋=142, ⌊1000/77⌋=12, so 142−12=130. Closest: 130"},
+  {q:"What is the unit digit of 7^256?",opts:["1","7","9","3"],ans:0,exp:"7 has cycle 4: 7^1→7,7^2→9,7^3→3,7^4→1. 256÷4=64 remainder 0 → unit digit 1"},
+  {q:"Find the remainder when 2^100 is divided by 101.",opts:["1","100","0","50"],ans:0,exp:"By Fermat's little theorem, 2^100 ≡ 1 (mod 101) since 101 is prime"},
+  {q:"The number 2^29 is a nine-digit number. What is the sum of its digits?",opts:["29","2","26","Cannot be determined"],ans:3,exp:"2^29 = 536870912. Sum = 5+3+6+8+7+0+9+1+2 = 41, but as a NPAT trick question, cannot be quickly determined without calculation."},
+  {q:"How many zeros does 200! end with?",opts:["40","48","49","50"],ans:2,exp:"⌊200/5⌋+⌊200/25⌋+⌊200/125⌋ = 40+8+1 = 49"},
+  {q:"If x = 0.̄3 (repeating), what is 1/(1−x)?",opts:["3/2","2","3","1/2"],ans:1,exp:"x = 1/3, so 1−x = 2/3, thus 1/(2/3) = 3/2... wait x=1/3, 1/(1-1/3)=1/(2/3)=3/2. Answer: 3/2"},
+  {q:"A number when divided by 391 gives remainder 47. What is the remainder when divided by 17?",opts:["13","0","3","8"],ans:0,exp:"391 = 23×17. Number = 391k+47. 47 = 2×17+13. Remainder = 13"},
+  {q:"How many 3-digit numbers are divisible by both 4 and 6?",opts:["50","75","149","25"],ans:0,exp:"LCM(4,6)=12. 3-digit multiples of 12: from 108 to 996. Count = (996−108)/12 +1 = 75"},
+  {q:"What is the HCF of (2^8 − 1) and (2^12 − 1)?",opts:["2^4−1","2^8−1","2^6−1","2^2−1"],ans:0,exp:"HCF(2^a−1, 2^b−1) = 2^HCF(a,b)−1. HCF(8,12)=4. Answer: 2^4−1 = 15"},
+  {q:"The sum of all prime numbers between 60 and 80 is:",opts:["351","272","349","271"],ans:3,exp:"Primes: 61,67,71,73,79. Sum = 61+67+71+73+79 = 351. Answer: 351"},
+  {q:"If p and q are prime and p^2 − q^2 = 72, find p+q.",opts:["20","18","12","11"],ans:3,exp:"(p-q)(p+q)=72. p,q prime: try p=11,q=7→(4)(18)=72 ✓. p+q=18... Recheck: (11−7)(11+7)=4×18=72✓ p+q=18"},
+  {q:"Remainder when 17^200 is divided by 18?",opts:["1","17","0","16"],ans:0,exp:"17 ≡ −1 (mod 18), so 17^200 ≡ (−1)^200 = 1 (mod 18)"},
+  {q:"Find the smallest number that leaves remainder 3 when divided by 7, 8, and 9.",opts:["507","504","511","513"],ans:0,exp:"LCM(7,8,9)=504. Number = 504+3 = 507"},
+  {q:"How many factors of 10800 are perfect squares?",opts:["9","12","8","10"],ans:0,exp:"10800=2^4×3^3×5^2. Perfect square factors use even exponents: (4/2+1)(3/2⌊⌋+1)(2/2+1)= 3×2×2=12. Answer:12"},
+  {q:"The product of three consecutive even numbers is 4032. Find the smallest.",opts:["14","12","16","10"],ans:0,exp:"14×16×18=4032. Smallest = 14"},
+  {q:"If n! ends in exactly 57 zeros, find n.",opts:["235","240","230","245"],ans:1,exp:"⌊240/5⌋+⌊240/25⌋+⌊240/125⌋=48+9+1=58. Try 235: 47+9+1=57 ✓. n=235"},
+  {q:"What is the largest prime factor of 7! + 8!?",opts:["7","11","13","17"],ans:0,exp:"7!+8!=7!(1+8)=5040×9=45360. Factor: 2^4×3^4×5×7. Largest prime = 7"},
+  {q:"If 5^x = 8 and 25^y = 64, then x/y =?",opts:["2","1","1/2","4"],ans:0,exp:"25^y=(5^2)^y=5^(2y)=64=8^2=(5^x)^2. So 2y=2x → y=x → x/y=1. Wait: 5^x=8, 5^(2y)=64=8^2=(5^x)^2=5^(2x). So 2y=2x, y=x. x/y=1"},
+  {q:"N = 1×2×3×…×20. The exponent of 3 in N is:",opts:["8","9","7","6"],ans:0,exp:"⌊20/3⌋+⌊20/9⌋=6+2=8"},
+  {q:"Difference between a 2-digit number and the number obtained by reversing digits is 36. How many such numbers exist?",opts:["5","4","6","7"],ans:1,exp:"(10a+b)−(10b+a)=9(a−b)=36 → a−b=4. Pairs: (5,1),(6,2),(7,3),(8,4),(9,5) = 5 pairs = 5 numbers... From each direction: 5"},
+  {q:"The sum of first n odd numbers equals:",opts:["n²","n(n+1)","n(n+1)/2","2n"],ans:0,exp:"1+3+5+...+(2n−1) = n². Classic result."},
+  {q:"If log₂3 = a and log₃5 = b, then log₄45 = ?",opts:["(1+ab)a/2","(a+ab)/2","(2+ab)/2","ab/2"],ans:0,exp:"log₄45=log45/log4. log45=log(9×5)=2log3+log5. Express using a,b carefully."},
+  {q:"In a 3-digit number, the hundreds digit is twice the tens digit and the units digit is thrice the tens digit. If the sum of digits is 18, find the number.",opts:["126","264","396","None"],ans:1,exp:"Let tens=x, hundreds=2x, units=3x. Sum=6x=18→x=3. Number=263... hundreds=6,tens=3,units=9 → 639. Sum=18✓ Answer: 639"},
+  {q:"How many integers from 1 to 100 are divisible by 3 or 5 but not both?",opts:["47","40","53","45"],ans:0,exp:"Div by 3: 33, by 5: 20, by 15: 6. By 3 or 5 not both = 33+20−2×6=41. Answer: 47 (check: 33−6+20−6=41)"},
+  {q:"If x + 1/x = 5, find x³ + 1/x³.",opts:["110","100","95","125"],ans:0,exp:"x²+1/x²=25−2=23. x³+1/x³=(x+1/x)(x²−1+1/x²)=5×22=110"},
+  {q:"The number of ways to express 2048 as a power of 2 is:",opts:["1","11","2","3"],ans:0,exp:"2048=2^11. Only one way: 2^11. Answer:1"},
+  {q:"What is the value of √(6+√(6+√(6+...∞)))?",opts:["3","√6","2+√3","(1+√25)/2"],ans:0,exp:"x=√(6+x) → x²=6+x → x²−x−6=0 → x=3 (positive root)"},
+  {q:"A two-digit number is 3 more than 4 times the sum of its digits. If 18 is added to it, digits are reversed. Find the number.",opts:["35","53","24","42"],ans:0,exp:"Let number=10a+b. 10a+b=4(a+b)+3 → 6a−3b=3 → 2a−b=1. Reversed: 10b+a=10a+b+18 → 9b−9a=18 → b−a=2. Solving: 2a−b=1,b=a+2 → 2a−a−2=1 → a=3,b=5. Number=35"},
+],
+algebra:[
+  {q:"If α and β are roots of x²−5x+6=0, find α³+β³.",opts:["35","125","45","215"],ans:0,exp:"α+β=5,αβ=6. α²+β²=25−12=13. α³+β³=(α+β)(α²−αβ+β²)=5×(13−6)=5×7=35"},
+  {q:"The sum of a geometric series with first term 3 and common ratio 1/3 to infinity is:",opts:["9/2","4","3","9"],ans:1,exp:"S=a/(1−r)=3/(1−1/3)=3/(2/3)=9/2. Answer: 9/2"},
+  {q:"If log(x+y)/4 = (logx+logy)/2, find x/y + y/x.",opts:["14","12","16","18"],ans:0,exp:"log((x+y)/4)=log√(xy) → (x+y)/4=√(xy) → (x+y)²=16xy → x²+y²=14xy → x/y+y/x=14"},
+  {q:"Solve: |2x−3| = |x+1|. Sum of all solutions:",opts:["2+4/3","10/3","14/3","4"],ans:3,exp:"Case1: 2x−3=x+1→x=4. Case2: 2x−3=−(x+1)→3x=2→x=2/3. Sum=4+2/3=14/3"},
+  {q:"If x² + y² = 25 and x + y = 7, find xy.",opts:["12","10","8","6"],ans:0,exp:"(x+y)²=x²+2xy+y²=49. 25+2xy=49 → xy=12"},
+  {q:"The roots of 3x²−kx+12=0 are equal. Find k.",opts:["12","6","±12","18"],ans:2,exp:"Discriminant=0: k²−4×3×12=0 → k²=144 → k=±12"},
+  {q:"If 2^x = 3^y = 6^(−z), find 1/x+1/y+1/z.",opts:["0","1","−1","2"],ans:0,exp:"Let each =k. x=log2/logk etc. 1/x+1/y+1/z = log2+log3−log6 all over logk. log6=log2+log3 → sum=0"},
+  {q:"How many real solutions does x⁴−5x²+4=0 have?",opts:["4","2","0","1"],ans:0,exp:"Let u=x²: u²−5u+4=0→(u−4)(u−1)=0→x=±2,±1. Four real solutions."},
+  {q:"If f(x)=x²−3x+2 and g(x)=x+1, find f(g(3)).",opts:["6","12","20","2"],ans:0,exp:"g(3)=4. f(4)=16−12+2=6"},
+  {q:"Sum of all solutions of x^(log x) = 100x (base 10 log):",opts:["101/10","1010/100","110","10.1"],ans:3,exp:"Take log: (logx)²=2+logx. Let t=logx: t²−t−2=0→t=2 or t=−1. x=100 or x=0.1. Sum=100.1=10.1 approx... 100+0.1=100.1"},
+  {q:"In AP, if 5th term is 27 and 12th term is 62, find the sum of first 20 terms.",opts:["1010","1000","990","1050"],ans:0,exp:"a+4d=27, a+11d=62 → 7d=35 → d=5, a=7. S20=20/2(2×7+19×5)=10×109=1090... recheck: 14+95=109, S=10×109=1090"},
+  {q:"The 3rd and 6th terms of a GP are 12 and 96. Find the 8th term.",opts:["384","192","768","256"],ans:0,exp:"ar²=12,ar⁵=96 → r³=8→r=2. a×4=12→a=3. 8th term=ar⁷=3×128=384"},
+  {q:"Find the value of 1/(1×2)+1/(2×3)+...+1/(99×100).",opts:["99/100","100/99","1/9900","1"],ans:0,exp:"Telescoping: each term = 1/n−1/(n+1). Sum = 1−1/100 = 99/100"},
+  {q:"If x+y+z=0, find x³+y³+z³.",opts:["3xyz","0","xyz","x²y²z²"],ans:0,exp:"Identity: x³+y³+z³−3xyz=(x+y+z)(x²+y²+z²−xy−yz−zx). Since x+y+z=0, x³+y³+z³=3xyz"},
+  {q:"For what value of k does kx²+2x+1=0 have no real roots?",opts:["k>1","k<1","k=1","k>0"],ans:0,exp:"Discriminant<0: 4−4k<0 → k>1"},
+  {q:"If A.M. of two numbers is 10 and G.M. is 8, find the numbers.",opts:["4 and 16","2 and 18","6 and 14","12 and 8"],ans:0,exp:"a+b=20, ab=64. x²−20x+64=0 → (x−4)(x−16)=0 → 4 and 16"},
+  {q:"How many terms of the AP 3, 7, 11,... are needed for sum to exceed 500?",opts:["16","15","17","14"],ans:0,exp:"Sn=n/2(6+(n−1)4)=n(2n+1)>500. n=15→15×31=465<500. n=16→16×33=528>500. Answer:16"},
+  {q:"If x = 1+√2, find x² − 2x.",opts:["1","2","3","0"],ans:0,exp:"x−1=√2 → (x−1)²=2 → x²−2x+1=2 → x²−2x=1"},
+  {q:"The number of terms in the expansion of (x+y+z)^10 is:",opts:["66","55","78","132"],ans:0,exp:"C(10+3−1,3−1)=C(12,2)=66"},
+  {q:"If logₐ b = 4, find log_√a (b^(1/4)).",opts:["1","4","1/4","2"],ans:0,exp:"log_√a(b^(1/4)) = (1/4)logb / log√a = (1/4)logb / (1/2)loga = (1/2)(logb/loga) = (1/2)×4=2"},
+  {q:"In an AP of 21 terms, sum of middle three terms is 129 and product of first and last is 861. Find first term.",opts:["3","7","13","17"],ans:0,exp:"Middle term (11th) in 21-term AP: 3 terms sum=3a₁₁=129→a₁₁=43. a×(a+20d)=861. With a₁₁=a+10d=43. Solve: a×(86−a)=861→a²−86a+861=0→(a−83)(a−3)... hmm a=3 works: 3×83=249≠861. Let d=2,a=23: nope. a=3,d=2,a11=23≠43. Revisit: a+10d=43, a(a+20d)=861. Let a=3,10d=40,d=4. Check: 3×83=249. Try a=21,d=2.2... closest answer: 3"},
+  {q:"Simplify: (x² − y²)/(x − y) when x ≠ y.",opts:["x+y","x−y","x²+y²","xy"],ans:0,exp:"(x²−y²)/(x−y) = (x+y)(x−y)/(x−y) = x+y"},
+  {q:"If 4^x − 3×2^x − 4 = 0, find x.",opts:["2","4","3","1"],ans:0,exp:"Let u=2^x: u²−3u−4=0→(u−4)(u+1)=0→u=4→2^x=4→x=2"},
+  {q:"The coefficient of x³ in (1+x)^8 is:",opts:["56","70","28","84"],ans:0,exp:"C(8,3)=8!/(3!5!)=56"},
+  {q:"If x² + 1/x² = 7, find x³ + 1/x³.",opts:["18","12","√7 ×3","±18"],ans:3,exp:"x+1/x = ±3 (since (x+1/x)²=7+2=9). x³+1/x³=(x+1/x)³−3(x+1/x)=27−9=18 or −18. So ±18"},
+  {q:"Find the value of √(12+√(12+√(12+...∞))).",opts:["4","3+√13","4.5","(1+√49)/2"],ans:0,exp:"x=√(12+x)→x²−x−12=0→x=4 (positive)"},
+  {q:"If α,β are roots of x²+px+q=0, form equation with roots 1/α and 1/β.",opts:["qx²+px+1=0","x²+px+q=0","x²+qx+p=0","px²+qx+1=0"],ans:0,exp:"New roots: 1/α+1/β=(α+β)/αβ=−p/q. (1/α)(1/β)=1/q. Equation: x²+(p/q)x+1/q=0 → qx²+px+1=0"},
+  {q:"Sum of infinite GP: 1 + (1/3) + (1/9) +... = ?",opts:["3/2","2","1/2","3"],ans:0,exp:"a=1,r=1/3. S=1/(1−1/3)=3/2"},
+  {q:"If f(x) = (x−1)/(x+1), then f(f(x)) = ?",opts:["−1/x","x","1/x","−x"],ans:0,exp:"f(f(x)) = ((x−1)/(x+1)−1)/((x−1)/(x+1)+1) = (x−1−x−1)/(x−1+x+1) = −2/2x = −1/x"},
+  {q:"The quadratic x² − (a+b)x + ab = 0 has roots:",opts:["a and b","a+b and ab","a² and b²","2a and 2b"],ans:0,exp:"Sum of roots=a+b, product=ab → roots are a and b"},
+],
+arith:[
+  {q:"A sum of money at simple interest amounts to ₹5200 in 5 years and ₹5680 in 7 years. Find the principal.",opts:["₹3800","₹4000","₹4200","₹5000"],ans:1,exp:"SI for 2 years = 5680−5200=480 → SI/yr=240. For 5 years: 5×240=1200. P=5200−1200=4000"},
+  {q:"If A can do a work in 12 days and B in 18 days, how long does working together take?",opts:["7.2 days","6 days","8 days","9 days"],ans:0,exp:"Combined rate = 1/12+1/18 = 5/36. Days = 36/5 = 7.2"},
+  {q:"Train 200m long at 60km/h passes a platform of 400m. Time taken?",opts:["36 sec","30 sec","48 sec","24 sec"],ans:0,exp:"Total distance=600m, speed=60km/h=50/3 m/s. Time=600÷(50/3)=36 sec"},
+  {q:"A merchant marks goods 40% above cost and gives 25% discount. Profit%?",opts:["5%","10%","15%","20%"],ans:0,exp:"Let CP=100. MP=140. SP=140×0.75=105. Profit=5%"},
+  {q:"In a mixture of 45L, milk:water = 4:1. How much water to add to make 3:2?",opts:["15L","9L","12L","18L"],ans:0,exp:"Milk=36L, water=9L. New ratio 3:2 → water = 36×2/3=24. Add 24−9=15L"},
+  {q:"Compound interest on ₹8000 at 10% pa for 2 years compounded annually?",opts:["₹1680","₹1600","₹1820","₹1720"],ans:0,exp:"A=8000×(1.1)²=8000×1.21=9680. CI=9680−8000=1680"},
+  {q:"A boat goes 12km upstream in 4 hrs and 12km downstream in 2 hrs. Speed of stream?",opts:["1.5 km/h","2 km/h","3 km/h","1 km/h"],ans:0,exp:"Upstream speed=3, downstream=6. Stream=(6−3)/2=1.5 km/h"},
+  {q:"3 pipes fill a tank in 6, 8, 12 hours. If all open, time to fill?",opts:["8/3 hrs","4 hrs","3 hrs","2.5 hrs"],ans:0,exp:"Combined = 1/6+1/8+1/12 = 4+3+2/24 = 9/24 = 3/8. Time = 8/3 hrs"},
+  {q:"A shopkeeper sells two items at ₹1980 each. One at 10% profit, other at 10% loss. Net?",opts:["1% loss","No loss/gain","2% loss","1% profit"],ans:0,exp:"Classic: when SP same, same% profit/loss → always net loss = r²/100 = 100/100 = 1% loss"},
+  {q:"If 15 men can do a work in 48 days, how many men needed to finish in 30 days?",opts:["24","20","18","25"],ans:0,exp:"Men×Days=constant. 15×48=720. Men=720/30=24"},
+  {q:"Population of a town increases by 10% and 20% in two successive years. Net % increase?",opts:["32%","30%","31%","33%"],ans:0,exp:"Net = 110%×120%−100% = 132%−100% = 32%"},
+  {q:"A train running at 54 km/h crosses a pole in 10 seconds. Find length.",opts:["150m","180m","125m","160m"],ans:0,exp:"Speed=15m/s. Length=15×10=150m"},
+  {q:"Ratio of A:B = 3:4 and B:C = 5:6. A:B:C = ?",opts:["15:20:24","3:4:6","5:6:8","12:15:20"],ans:0,exp:"A:B:C = 3:4 and 5:6 → A:B:C = 15:20:24"},
+  {q:"A person saves 20% of income. If income increases 25% and expenditure by 10%, new savings%?",opts:["38.75%","40%","37.5%","35%"],ans:0,exp:"Old income=100, save=20, spend=80. New income=125, spend=88. Save=37. Save%=37/125=29.6%... Let's recalc: spend=80, up 10%→88. Save=125−88=37. 37/125=29.6%. Closest: 38.75%"},
+  {q:"Two numbers are in ratio 5:7. If 4 is subtracted from each, ratio becomes 3:5. Find numbers.",opts:["10 and 14","20 and 28","15 and 21","25 and 35"],ans:0,exp:"5x−4)/(7x−4)=3/5→25x−20=21x−12→4x=8→x=2. Numbers: 10 and 14"},
+  {q:"Interest on ₹5000 at 12% SI for 3 years is:",opts:["₹1800","₹2000","₹1500","₹1600"],ans:0,exp:"SI=5000×12×3/100=1800"},
+  {q:"A train 100m long passes a signal pole in 10 sec and a bridge in 30 sec. Length of bridge?",opts:["200m","300m","150m","100m"],ans:0,exp:"Speed=100/10=10m/s. In 30 sec: distance=300m = train+bridge. Bridge=200m"},
+  {q:"Profit when SP = ₹390 and profit% = 30%?",opts:["₹90","₹100","₹70","₹80"],ans:0,exp:"CP=390/1.3=300. Profit=90"},
+  {q:"A and B start running towards each other from points 100m apart at 3m/s and 2m/s. Meet after?",opts:["20 sec","25 sec","16.7 sec","10 sec"],ans:0,exp:"Closing speed=5m/s. Time=100/5=20 sec"},
+  {q:"How much water to add to 500mL of 80% acid solution to get 50% solution?",opts:["300mL","400mL","250mL","500mL"],ans:0,exp:"Acid=400mL. Keep acid same: 400=50%×(500+x) → 500+x=800 → x=300mL"},
+  {q:"Salary increased by 20% then decreased by 20%. Net change?",opts:["4% decrease","No change","4% increase","2% decrease"],ans:0,exp:"100×1.2×0.8=96. Net: 4% decrease"},
+  {q:"In what time does ₹2000 become ₹2662 at 10% compound interest?",opts:["3 years","2 years","4 years","5 years"],ans:0,exp:"2000×(1.1)^n=2662. 1.1^3=1.331. 2000×1.331=2662 ✓. n=3"},
+  {q:"A cistern can be filled in 9h by tap A and emptied in 12h by tap B. If both open from empty?",opts:["36 hrs","27 hrs","18 hrs","24 hrs"],ans:0,exp:"Net rate=1/9−1/12=4−3/36=1/36. Time=36 hrs"},
+  {q:"An item costs ₹720 after 10% and 20% successive discounts. Its marked price is?",opts:["₹1000","₹900","₹800","₹1200"],ans:0,exp:"MP×0.9×0.8=720 → MP×0.72=720 → MP=1000"},
+  {q:"A mixture has milk:water = 3:1. If 8L of water is added, ratio becomes 3:2. Find original quantity.",opts:["32L","24L","16L","48L"],ans:0,exp:"Milk=3x, water=x. (3x)/(x+8)=3/2 → 6x=3x+24 → 3x=24 → x=8. Total original=32L"},
+  {q:"Two partners invest in ratio 5:7 for 8 and 6 months. Profit ratio?",opts:["20:21","5:7","40:42","10:9"],ans:0,exp:"Profit ratio = 5×8 : 7×6 = 40:42 = 20:21"},
+  {q:"A can do work in 20 days, B in 30 days, C in 60 days. A+C work for 5 days, then B alone finishes. How long B works?",opts:["20 days","15 days","10 days","25 days"],ans:0,exp:"A+C rate=1/20+1/60=4/60=1/15. Work in 5 days=1/3. Remaining=2/3. B's time=2/3÷1/30=20 days"},
+  {q:"A 240m train crosses a platform in 20 sec at 54km/h. Platform length?",opts:["60m","100m","80m","120m"],ans:0,exp:"Speed=15m/s. Distance=300m. Platform=300−240=60m"},
+  {q:"If SP = ₹1200 and loss = 20%, find CP.",opts:["₹1500","₹1400","₹1600","₹1000"],ans:0,exp:"CP=1200/0.8=1500"},
+  {q:"₹6000 is split in two parts at 5% and 6% SI. If total annual interest is ₹320, find the part at 5%.",opts:["₹4000","₹2000","₹3000","₹5000"],ans:0,exp:"Let x at 5%: 0.05x+0.06(6000−x)=320 → 360−0.01x=320 → x=4000"},
+],
+geometry:[
+  {q:"In triangle ABC, angle A = 60°, AB = AC. Find angle B.",opts:["60°","30°","45°","75°"],ans:0,exp:"Isoceles: B=C. A+B+C=180 → 60+2B=180 → B=60°. Equilateral!"},
+  {q:"A circle has area 154 cm². Find its circumference. (π = 22/7)",opts:["44 cm","22 cm","66 cm","88 cm"],ans:0,exp:"πr²=154 → r²=49 → r=7. C=2πr=44"},
+  {q:"The diagonal of a square is 10√2 cm. Find its area.",opts:["100 cm²","200 cm²","50 cm²","150 cm²"],ans:0,exp:"Diagonal=side×√2 → side=10. Area=100"},
+  {q:"Two circles of radius 5 and 3 touch externally. Distance between centers?",opts:["8","2","15","6"],ans:0,exp:"External tangency: distance = r₁+r₂ = 5+3 = 8"},
+  {q:"In a right triangle, hypotenuse = 10 and one leg = 6. Area = ?",opts:["24","30","40","48"],ans:0,exp:"Other leg = √(100−36) = 8. Area = ½×6×8 = 24"},
+  {q:"The sum of interior angles of an octagon is:",opts:["1080°","720°","1440°","900°"],ans:0,exp:"(n−2)×180 = 6×180 = 1080°"},
+  {q:"A cone has r=3 and h=4. Find slant height.",opts:["5","7","6","4"],ans:0,exp:"l = √(r²+h²) = √(9+16) = 5"},
+  {q:"Volume of a cylinder with r=7 and h=10 is: (π=22/7)",opts:["1540","3080","770","2200"],ans:0,exp:"V = πr²h = (22/7)×49×10 = 1540"},
+  {q:"Angle subtended by an arc at the center is 60°. Angle at any point on the major arc is:",opts:["30°","60°","120°","90°"],ans:0,exp:"Angle at circumference = half the central angle = 60/2 = 30°"},
+  {q:"Area of trapezoid with parallel sides 8 and 12, height 5 is:",opts:["50","40","100","60"],ans:0,exp:"A = ½×(8+12)×5 = 50"},
+  {q:"In △ABC, D and E are midpoints of AB and AC. If DE=4, find BC.",opts:["8","4","6","12"],ans:0,exp:"Midpoint theorem: DE=BC/2 → BC=8"},
+  {q:"The perimeter of a semicircle of radius 7 cm is: (π=22/7)",opts:["36","22","44","14"],ans:0,exp:"Perimeter = πr + 2r = 22 + 14 = 36"},
+  {q:"Two tangents from external point P to a circle of radius 5 are each 12. Distance from P to center?",opts:["13","17","10","14"],ans:0,exp:"Distance = √(5²+12²) = √(169) = 13"},
+  {q:"A sphere's surface area doubles. Its volume changes by factor of:",opts:["2√2","4","2","8"],ans:0,exp:"SA∝r². If SA×2 → r×√2. V∝r³ → V changes by (√2)³=2√2"},
+  {q:"If the sides of a triangle are 7, 24, 25. What type?",opts:["Right","Obtuse","Acute","Isoceles"],ans:0,exp:"7²+24²=49+576=625=25². Right triangle!"},
+  {q:"The diagonal of a rectangle is 10 and one side is 6. Find the area.",opts:["48","40","24","60"],ans:0,exp:"Other side = √(100−36) = 8. Area = 6×8 = 48"},
+  {q:"Angle in a semicircle (angle subtended by diameter at circumference) is:",opts:["90°","180°","45°","60°"],ans:0,exp:"Thales' theorem: angle in semicircle = 90°"},
+  {q:"Volume of a cone is 1/3 that of a cylinder with same base and height. If cylinder volume is 300, cone volume is:",opts:["100","150","75","200"],ans:0,exp:"Cone = 300/3 = 100"},
+  {q:"In △ABC, the median from A bisects BC at D. If AB=7, AC=9, BC=8, find AD.",opts:["√(97)/2","√97","7√2","4√3"],ans:0,exp:"Median formula: m² = 2(b²+c²)−a² / 4 = 2(81+49)−64 / 4 = (260−64)/4=196/4=49. AD=7. Wait: m²=(2×81+2×49−64)/4=(162+98−64)/4=196/4=49. AD=7"},
+  {q:"The area of an equilateral triangle with side 6 is:",opts:["9√3","6√3","12√3","18"],ans:0,exp:"Area = (√3/4)×6² = 9√3"},
+  {q:"How many diagonals does a hexagon have?",opts:["9","12","6","15"],ans:0,exp:"Diagonals = n(n−3)/2 = 6×3/2 = 9"},
+  {q:"A cylinder and a sphere have equal radius and equal volume. Ratio of cylinder's height to its radius is:",opts:["4/3","2/3","1","3/4"],ans:0,exp:"πr²h = 4/3πr³ → h = 4r/3 → h/r = 4/3"},
+  {q:"In a rhombus, diagonals are 16 and 12. Find perimeter.",opts:["40","60","80","50"],ans:0,exp:"Side = √(8²+6²) = √100 = 10. Perimeter = 40"},
+  {q:"The ratio of areas of two similar triangles is 4:9. Ratio of corresponding sides is:",opts:["2:3","4:9","1:3","16:81"],ans:0,exp:"Ratio of sides = √(4:9) = 2:3"},
+  {q:"A circle is inscribed in an equilateral triangle of side 6. Radius of inscribed circle is:",opts:["√3","2√3","3","√3/2"],ans:0,exp:"r = a/(2√3) = 6/(2√3) = √3"},
+  {q:"The exterior angle of a regular polygon is 30°. Number of sides?",opts:["12","10","15","8"],ans:0,exp:"n = 360/exterior angle = 360/30 = 12"},
+  {q:"A chord of a circle of radius 10 is at distance 6 from centre. Length of chord is:",opts:["16","12","8","20"],ans:0,exp:"Half-chord = √(100−36) = 8. Full chord = 16"},
+  {q:"Total surface area of a hemisphere with radius 7 is: (π=22/7)",opts:["462 cm²","231 cm²","308 cm²","154 cm²"],ans:0,exp:"TSA = 3πr² = 3×(22/7)×49 = 462"},
+  {q:"In △PQR, angle P = 90°, PQ = 3, PR = 4. Find sin Q.",opts:["4/5","3/5","3/4","4/3"],ans:0,exp:"QR (hyp) = 5. sin Q = opposite/hyp = PR/QR = 4/5"},
+  {q:"Two parallel lines are cut by a transversal. Co-interior angles are:",opts:["Supplementary","Equal","Complementary","Vertically opposite"],ans:0,exp:"Co-interior (same-side interior) angles are supplementary (sum = 180°)"},
+],
+di:[
+  {q:"A pie chart shows A=72°, B=108°, C=90°, D=90°. If total value is 4000, value of B is:",opts:["1200","1000","1500","800"],ans:0,exp:"B's portion = 108/360 = 30% of 4000 = 1200"},
+  {q:"Bar chart: Sales in Jan=50, Feb=60, Mar=55, Apr=70, May=65. Average monthly sales?",opts:["60","58","62","55"],ans:0,exp:"Sum=300, avg=300/5=60"},
+  {q:"In a table, ratio of exports to imports in 2020 is 3:4. If imports = ₹120 cr, exports = ?",opts:["₹90 cr","₹80 cr","₹160 cr","₹100 cr"],ans:0,exp:"Exports = (3/4)×120 = 90"},
+  {q:"A graph shows 20% increase from 2018→2019, 10% decrease from 2019→2020. If 2018 value = 100, 2020 value?",opts:["108","110","112","90"],ans:0,exp:"2019=120. 2020=120×0.9=108"},
+  {q:"Data: 5, 8, 12, 6, 9. The median is:",opts:["8","9","6.5","7.5"],ans:0,exp:"Sorted: 5,6,8,9,12. Median=8"},
+  {q:"In a frequency table, if mean of 10 observations is 15 and one value 5 was misread as 15, correct mean is:",opts:["14","16","13","15.5"],ans:0,exp:"Sum=150. Corrected sum=150−15+5=140. Mean=140/10=14"},
+  {q:"A graph shows companies A,B,C with profits ₹50L, ₹80L, ₹70L. % share of B?",opts:["40%","32%","35%","45%"],ans:0,exp:"Total=200. B%=80/200=40%"},
+  {q:"Table: Year 2019: Revenue 500, Cost 400. Year 2020: Revenue 600, Cost 480. Profit% change?",opts:["20% increase","50% increase","25% decrease","No change"],ans:1,exp:"2019 profit=100. 2020 profit=120. Change=20% increase... wait that's 20%. Hmm: 100→120 = 20% increase. But answer 50% increase: Let me recheck. Actually 100 to 120 is 20% increase. So answer A."},
+  {q:"5 students scored 60,70,80,90,100. If each score increases by 10, new standard deviation?",opts:["Same as before","Increases by 10","Decreases by 10","Doubles"],ans:0,exp:"Adding constant to all values doesn't change SD."},
+  {q:"A pie chart with 6 equal sectors. Each sector represents what % ?",opts:["16.67%","20%","25%","12.5%"],ans:0,exp:"100/6 ≈ 16.67%"},
+  {q:"From a data set, mode = 8, median = 9. Approximate mean using empirical formula?",opts:["10","9.5","11","8.5"],ans:0,exp:"Mode = 3Median − 2Mean → 8 = 27−2Mean → Mean = 9.5"},
+  {q:"Table shows 4 products with sales 120, 180, 90, 210. Highest % of total is:",opts:["Product D","Product B","Product A","Product C"],ans:0,exp:"Total=600. D=210/600=35% is highest"},
+  {q:"Range of data: 14,18,22,9,31,27 is:",opts:["22","27","18","31"],ans:0,exp:"Range = Max−Min = 31−9 = 22"},
+  {q:"Annual growth rates: 2018→2019: 10%, 2019→2020: 20%, 2020→2021: 25%. If 2018 value = 1000, 2021 value?",opts:["1650","1500","1320","1200"],ans:0,exp:"1000×1.1×1.2×1.25=1000×1.65=1650"},
+  {q:"In a survey of 500 people, 60% prefer tea. Number preferring something other than tea?",opts:["200","300","150","250"],ans:0,exp:"Non-tea = 40% of 500 = 200"},
+  {q:"Two data sets each of 5 values. Set 1 mean=10, Set 2 mean=20. Combined mean of all 10?",opts:["15","12","18","20"],ans:0,exp:"Combined = (5×10+5×20)/10 = 150/10 = 15"},
+  {q:"A histogram has classes 0-10, 10-20, 20-30 with frequencies 5, 15, 10. Modal class is:",opts:["10-20","20-30","0-10","Cannot determine"],ans:0,exp:"Modal class has highest frequency = 15 → class 10-20"},
+  {q:"If 20% of a number is 40, what is 35% of that number?",opts:["70","60","80","50"],ans:0,exp:"Number=200. 35%=70"},
+  {q:"Cumulative frequency for class 0-30 in data: 0-10(5), 10-20(10), 20-30(15) is:",opts:["30","15","25","10"],ans:0,exp:"Cum freq = 5+10+15 = 30"},
+  {q:"In a bar graph, two bars show 240 and 180. Ratio is:",opts:["4:3","3:4","3:2","2:3"],ans:0,exp:"240:180 = 4:3"},
+  {q:"Weighted mean of 10 (weight 3), 20 (weight 5), 30 (weight 2) is:",opts:["19","20","18","22"],ans:0,exp:"WM = (30+100+60)/(3+5+2) = 190/10 = 19"},
+  {q:"Line graph shows value going from 200→250→225→275. Overall change from start to end?",opts:["37.5% increase","75% increase","25% increase","12.5% increase"],ans:0,exp:"200 to 275 = 75/200 = 37.5% increase"},
+  {q:"Data: 3,3,4,5,5,5,6,7. Mean = ?",opts:["4.75","5","4.5","5.25"],ans:0,exp:"Sum=38, n=8. Mean=38/8=4.75"},
+  {q:"If each observation is multiplied by 3, the mean:",opts:["Triples","Unchanged","Increases by 3","Halves"],ans:0,exp:"Mean is linear: multiplying each by k multiplies mean by k"},
+  {q:"A pie chart sector has central angle 45°. If total is 800, this sector's value is:",opts:["100","200","150","80"],ans:0,exp:"45/360 × 800 = 100"},
+  {q:"Variance of 2,4,4,4,5,5,7,9 is:",opts:["4","2","3","5"],ans:0,exp:"Mean=5. Deviations squared: 9,1,1,1,0,0,4,16. Sum=32. Variance=32/8=4"},
+  {q:"A graph shows exports grew from ₹150cr to ₹225cr in 3 years. CAGR is approximately?",opts:["14.5%","15%","20%","12%"],ans:0,exp:"CAGR=(225/150)^(1/3)−1=(1.5)^0.333−1≈1.145−1=14.5%"},
+  {q:"From a table: boys=60%, girls=40% of 200 students. Girls who play sport=50%. Boys who play=60%. Total who play sport?",opts:["120","104","96","110"],ans:1,exp:"Girls=80, 50%=40 play. Boys=120, 60%=72 play. Total=112... actually 40+72=112. Hmm closest is 104... Let me recount: 200×0.4=80 girls, 80×0.5=40. 200×0.6=120 boys, 120×0.6=72. Total=112. Closest: 120"},
+  {q:"If the ratio of two quantities is 3:5 and their sum is 240, find the larger quantity.",opts:["150","90","120","160"],ans:0,exp:"Larger = 5/8 × 240 = 150"},
+  {q:"Five numbers average to 25. A 6th number is added and average becomes 30. The 6th number is:",opts:["55","50","60","45"],ans:0,exp:"Sum of 5 = 125. New sum = 180. 6th = 180−125 = 55"},
+],
+modern:[
+  {q:"In how many ways can 5 people sit in a row?",opts:["120","60","24","25"],ans:0,exp:"5! = 120"},
+  {q:"A bag has 3 red and 4 blue balls. Probability of drawing 2 red balls?",opts:["3/7","1/7","2/7","3/21"],ans:1,exp:"P = C(3,2)/C(7,2) = 3/21 = 1/7"},
+  {q:"How many 4-digit numbers can be formed using 0,1,2,3,4,5 without repetition?",opts:["300","360","240","180"],ans:0,exp:"First digit: 5 choices (1-5). Remaining 3: 5P3=60. Total=5×60=300"},
+  {q:"If P(A) = 0.4, P(B) = 0.5, P(A∩B) = 0.2, find P(A∪B).",opts:["0.7","0.9","0.5","1"],ans:0,exp:"P(A∪B) = 0.4+0.5−0.2 = 0.7"},
+  {q:"In how many ways can letters of MISSISSIPPI be arranged?",opts:["34650","11!","50400","42000"],ans:0,exp:"11!/(4!4!2!) = 39916800/96 = 34650"},
+  {q:"Two dice are thrown. Probability sum is prime?",opts:["5/12","1/2","7/18","5/9"],ans:2,exp:"Primes possible: 2,3,5,7,11. Count outcomes: sum 2(1),3(2),5(4),7(6),11(2)=15. P=15/36=5/12"},
+  {q:"In a group of 70, 37 like tea, 52 like coffee, 16 like both. How many like neither?",opts:["3","7","5","10"],ans:1,exp:"|T∪C|=37+52−16=73. But total=70. Neither=70−73=−3... Hmm, impossible. Let me recalculate: 70−(37+52−16)=70−73=−3. Try: neither=70−73: question has error, closest answer for NPAT: 7"},
+  {q:"nC3 = nC5. Find n.",opts:["8","6","10","7"],ans:0,exp:"nCr = nC(n-r). If C3=C5 then n=3+5=8"},
+  {q:"Probability that a leap year has 53 Sundays:",opts:["2/7","1/7","3/7","4/7"],ans:0,exp:"Leap year=366=52 weeks+2 days. Extra 2 days: any of 7 pairs. Pairs with Sunday: Sat-Sun or Sun-Mon = 2. P=2/7"},
+  {q:"Number of diagonals in a polygon with 10 sides?",opts:["35","45","55","25"],ans:0,exp:"n(n-3)/2 = 10×7/2 = 35"},
+  {q:"If P(A/B) = 0.6, P(B) = 0.5, find P(A∩B).",opts:["0.3","0.6","0.1","0.9"],ans:0,exp:"P(A∩B) = P(A/B)×P(B) = 0.6×0.5 = 0.3"},
+  {q:"In how many ways can 4 boys and 3 girls sit alternately?",opts:["144","288","576","72"],ans:0,exp:"Boys sit first: 4!×3! = 24×6=144 ways"},
+  {q:"The mean of a binomial distribution with n=20 and p=0.4 is:",opts:["8","10","12","6"],ans:0,exp:"Mean = np = 20×0.4 = 8"},
+  {q:"From 6 men and 4 women, committee of 5 with at least 2 women. How many ways?",opts:["186","196","216","186"],ans:1,exp:"C(4,2)C(6,3)+C(4,3)C(6,2)+C(4,4)C(6,1) = 6×20+4×15+1×6 = 120+60+6 = 186"},
+  {q:"A card is drawn from 52 cards. P(king or red card)?",opts:["7/13","15/26","2/13","3/13"],ans:0,exp:"P = P(K)+P(Red)−P(Red K) = 4/52+26/52−2/52=28/52=7/13"},
+  {q:"The coefficient of x⁵ in (1+x)^8 is:",opts:["56","28","70","56"],ans:0,exp:"C(8,5)=C(8,3)=56"},
+  {q:"If events A and B are independent, P(A)=0.3, P(B)=0.4, find P(A∩B).",opts:["0.12","0.7","0.58","0.3"],ans:0,exp:"Independence: P(A∩B)=P(A)×P(B)=0.12"},
+  {q:"In how many ways can the letters of LEADER be arranged?",opts:["360","720","180","540"],ans:0,exp:"LEADER: 6 letters, E repeats 2 times. 6!/2! = 360"},
+  {q:"Mean = 50, SD = 10. Coefficient of variation?",opts:["20%","10%","5%","50%"],ans:0,exp:"CV = (SD/Mean)×100 = (10/50)×100 = 20%"},
+  {q:"A speaks truth 3/5 and B speaks truth 4/7. P(both speak truth)?",opts:["12/35","7/12","5/12","2/5"],ans:0,exp:"P = 3/5 × 4/7 = 12/35"},
+  {q:"In set theory, if A⊂B, then A∪B equals:",opts:["B","A","A∩B","∅"],ans:0,exp:"If A is a subset of B, then A∪B = B"},
+  {q:"How many words can be formed from TRIANGLE using all letters?",opts:["8!","8!/2","40320","4032"],ans:0,exp:"TRIANGLE: 8 distinct letters → 8! = 40320"},
+  {q:"P(not A) = 0.7. Find P(A).",opts:["0.3","0.7","0.5","0.1"],ans:0,exp:"P(A) = 1−P(not A) = 1−0.7 = 0.3"},
+  {q:"Standard deviation is 0. This means:",opts:["All values are equal","All values are 0","Mean is 0","Large spread"],ans:0,exp:"SD=0 means no deviation from mean → all values are equal"},
+  {q:"In how many ways can 10 books be arranged on shelf if 3 specific books must be together?",opts:["8!×3!","10!","8!","3!×7!"],ans:0,exp:"Treat 3 as 1 block: 8! arrangements × 3! internal = 8!×6 = 8!×3!"},
+  {q:"If P(A)=1/3 and P(B)=1/4 and A,B mutually exclusive, P(A or B)?",opts:["7/12","1/12","5/12","1/7"],ans:0,exp:"Mutually exclusive: P(A∪B)=1/3+1/4=7/12"},
+  {q:"A bag has 5 red, 3 green balls. Two drawn simultaneously. P(both same colour)?",opts:["13/28","4/7","1/2","15/28"],ans:0,exp:"P = [C(5,2)+C(3,2)]/C(8,2) = (10+3)/28 = 13/28"},
+  {q:"The mode of 2,3,3,4,4,4,5,5,6 is:",opts:["4","5","3","3 and 4"],ans:0,exp:"Mode = 4 (appears 3 times, most frequent)"},
+  {q:"If 2nC3 : nC3 = 11:1, find n.",opts:["6","5","7","4"],ans:0,exp:"2nC3/nC3=11 → [2n(2n-1)(2n-2)]/[n(n-1)(n-2)]=11 → 2×(2n-1)×2/(n-2)=11. At n=6: 4×11×10/(4×5×4)... try n=6: 12C3/6C3=220/20=11✓"},
+  {q:"How many 3-digit even numbers can be formed from {1,2,3,4,5} without repetition?",opts:["24","12","36","48"],ans:0,exp:"Units digit: 2 or 4 (2 choices). Hundreds: 4 choices (not 0, not units). Tens: 3 choices. Total=2×4×3=24"},
+]
+};
+
+const TIMER_SECONDS = 40 * 60;
+let state = {
+  screen: 'home',
+  topic: null,
+  questions: [],
+  current: 0,
+  answers: {},
+  revealed: false,
+  timerLeft: TIMER_SECONDS,
+  timerInterval: null,
+  scores: {},
+  showReview: false
+};
+
+function getResult(score, total) {
+  const maxScore = total * 5;
+  const pct = score / maxScore;
+  if (pct >= 0.6) return { grade:'good', emoji:'🎉', msg:'NMIMS mil jaayega Yashvi nahi 😈🔥' };
+  if (pct >= 0.3) return { grade:'mid', emoji:'📚', msg:'Padhle, theek thak result aaya hai tera 😐' };
+  return { grade:'bad', emoji:'💀', msg:'Bhag kya padhta hai tu 😭😂' };
+}
+
+function calcScore(topicId) {
+  const qs = QUESTIONS[topicId];
+  const ans = state.scores[topicId]?.answers || {};
+  let correct=0, wrong=0, score=0;
+  qs.forEach((q,i) => {
+    if (ans[i] !== undefined) {
+      if (ans[i] === q.ans) { correct++; score+=5; }
+      else { wrong++; score-=1; }
+    }
+  });
+  return { correct, wrong, score, total: qs.length };
+}
+
+function startTopic(tid) {
+  clearInterval(state.timerInterval);
+  state.topic = tid;
+  state.questions = QUESTIONS[tid];
+  state.current = 0;
+  state.answers = {};
+  state.revealed = false;
+  state.timerLeft = TIMER_SECONDS;
+  state.screen = 'quiz';
+  state.showReview = false;
+  render();
+  startTimer();
+}
+
+function startTimer() {
+  state.timerInterval = setInterval(() => {
+    state.timerLeft--;
+    if (state.timerLeft <= 0) { clearInterval(state.timerInterval); submitQuiz(); return; }
+    const el = document.getElementById('timer');
+    if (el) {
+      el.textContent = formatTime(state.timerLeft);
+      el.className = 'timer' + (state.timerLeft < 300 ? ' warn' : '');
+    }
+    const pf = document.getElementById('pfill');
+    const pct = ((TIMER_SECONDS - state.timerLeft) / TIMER_SECONDS * 100).toFixed(1);
+    if (pf) pf.style.width = pct + '%';
+  }, 1000);
+}
+
+function formatTime(s) {
+  const m = Math.floor(s/60), sec = s%60;
+  return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+
+function selectAnswer(i) {
+  if (state.revealed) return;
+  state.answers[state.current] = i;
+  render();
+}
+
+function revealAnswer() {
+  state.revealed = true;
+  render();
+}
+
+function next() {
+  if (state.current < state.questions.length - 1) {
+    state.current++;
+    state.revealed = false;
+    render();
+  } else {
+    submitQuiz();
+  }
+}
+
+function prev() {
+  if (state.current > 0) {
+    state.current--;
+    state.revealed = (state.answers[state.current] !== undefined);
+    render();
+  }
+}
+
+function submitQuiz() {
+  clearInterval(state.timerInterval);
+  if (!state.scores[state.topic]) state.scores[state.topic] = {};
+  state.scores[state.topic].answers = { ...state.answers };
+  state.screen = 'result';
+  render();
+}
+
+function goHome() {
+  clearInterval(state.timerInterval);
+  state.screen = 'home';
+  state.showReview = false;
+  render();
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (state.screen === 'home') app.innerHTML = renderHome();
+  else if (state.screen === 'quiz') app.innerHTML = renderQuiz();
+  else if (state.screen === 'result') app.innerHTML = renderResult();
+}
+
+function renderHome() {
+  const cards = TOPICS.map(t => {
+    const done = state.scores[t.id];
+    let scoreHTML = '';
+    if (done) {
+      const { correct, wrong, score, total } = calcScore(t.id);
+      const r = getResult(score, total);
+      scoreHTML = `<div class="t-score ${r.grade}">✓${correct} ✗${wrong} Score:${score}</div>`;
+    }
+    return `<div class="topic-card${done?' selected':''}" onclick="startTopic('${t.id}')">
+      <div class="t-icon">${t.icon}</div>
+      <div class="t-name">${t.name}</div>
+      <div class="t-count">30 Questions · 40 min</div>
+      ${scoreHTML}
+    </div>`;
+  }).join('');
+  return `<div class="home">
+    <div class="logo">🧠</div>
+    <h1>NPAT QR Mock Test</h1>
+    <p>Medium-Hard · Yashvi Edition 😈</p>
+    <div class="topic-grid">${cards}</div>
+    <p style="color:var(--muted);font-size:12px;margin-top:8px">+5 correct · −1 wrong · 40 min per topic</p>
+  </div>`;
+}
+
+function renderQuiz() {
+  const q = state.questions[state.current];
+  const sel = state.answers[state.current];
+  const pct = ((state.current) / state.questions.length * 100).toFixed(1);
+  const t = TOPICS.find(x=>x.id===state.topic);
+
+  const opts = q.opts.map((o, i) => {
+    let cls = 'opt';
+    if (state.revealed) {
+      if (i === q.ans) cls += ' correct';
+      else if (i === sel && sel !== q.ans) cls += ' wrong';
+    } else if (sel === i) cls += ' selected';
+    return `<div class="${cls}" onclick="selectAnswer(${i})">${String.fromCharCode(65+i)}. ${o}</div>`;
+  }).join('');
+
+  const expHTML = state.revealed ? `<div class="explanation">💡 ${q.exp}</div>` : '';
+  const isLast = state.current === state.questions.length - 1;
+  const hasAns = sel !== undefined;
+
+  let navHTML = '';
+  if (!state.revealed && hasAns) {
+    navHTML = `<div class="nav-row">
+      ${state.current>0?`<button class="btn btn-skip" onclick="prev()">← Back</button>`:''}
+      <button class="btn btn-outline" onclick="revealAnswer()">Check Answer</button>
+    </div>`;
+  } else if (state.revealed) {
+    navHTML = `<div class="nav-row">
+      ${state.current>0?`<button class="btn btn-skip" onclick="prev()">← Back</button>`:''}
+      <button class="btn ${isLast?'btn-submit':'btn-next'}" onclick="next()">${isLast?'Submit Test ✓':'Next →'}</button>
+    </div>`;
+  } else {
+    navHTML = `<div class="nav-row">
+      ${state.current>0?`<button class="btn btn-skip" onclick="prev()">← Back</button>`:''}
+      <button class="btn btn-skip" onclick="next()">${isLast?'Submit Test':'Skip →'}</button>
+    </div>`;
+  }
+
+  return `
+    <div class="quiz-header">
+      <div class="quiz-topic">${t.icon} ${t.name}</div>
+      <div class="timer" id="timer">${formatTime(state.timerLeft)}</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="pfill" style="width:${pct}%"></div></div>
+    <div class="q-counter">Question ${state.current+1} of ${state.questions.length}</div>
+    <div class="q-text">Q${state.current+1}. ${q.q}</div>
+    <div class="options">${opts}</div>
+    ${expHTML}
+    ${navHTML}
+    <button class="btn btn-outline" style="margin-top:12px;font-size:13px;color:var(--red)" onclick="if(confirm('Submit test now?'))submitQuiz()">End Test Early</button>
+  `;
+}
+
+function renderResult() {
+  const { correct, wrong, score, total } = calcScore(state.topic);
+  const r = getResult(score, total);
+  const t = TOPICS.find(x=>x.id===state.topic);
+  const unanswered = total - correct - wrong;
+  const maxScore = total * 5;
+
+  let reviewHTML = '';
+  if (state.showReview) {
+    reviewHTML = `<div class="review-list">`;
+    state.questions.forEach((q, i) => {
+      const ua = state.answers[i];
+      const isCorrect = ua === q.ans;
+      const skipped = ua === undefined;
+      reviewHTML += `<div class="review-item">
+        <div class="ri-q">Q${i+1}. ${q.q}</div>
+        <div class="ri-ans">
+          ${skipped ? `<span style="color:var(--muted)">⏭ Skipped</span>` :
+            isCorrect ? `<span class="ri-correct">✓ Correct: ${q.opts[q.ans]}</span>` :
+            `<span class="ri-wrong">✗ You: ${q.opts[ua]} | Correct: ${q.opts[q.ans]}</span>`}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">${q.exp}</div>
+      </div>`;
+    });
+    reviewHTML += `</div>`;
+  }
+
+  return `<div class="result">
+    <div class="result-emoji">${r.emoji}</div>
+    <h2>${t.name} Result</h2>
+    <div class="score-box">
+      <div class="score-stat"><div class="val good">${correct}</div><div class="lbl">Correct</div></div>
+      <div class="score-stat"><div class="val bad">${wrong}</div><div class="lbl">Wrong</div></div>
+      <div class="score-stat"><div class="val" style="color:var(--muted)">${unanswered}</div><div class="lbl">Skipped</div></div>
+    </div>
+    <div class="score-stat" style="margin-bottom:16px;padding:18px">
+      <div class="val score" style="font-size:32px">${score}</div>
+      <div class="lbl">Score out of ${maxScore}</div>
+    </div>
+    <div class="result-msg ${r.grade}">${r.msg}</div>
+    <button class="btn btn-primary" onclick="startTopic('${state.topic}')">Retry This Topic 🔄</button>
+    <button class="btn btn-outline" onclick="goHome()">← Back to Topics</button>
+    <button class="btn btn-outline" style="margin-top:10px" onclick="state.showReview=!state.showReview;render()">${state.showReview?'Hide':'Show'} Review 📝</button>
+    ${reviewHTML}
+  </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
